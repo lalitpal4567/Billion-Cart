@@ -2,6 +2,7 @@ package com.billioncart.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,6 +23,10 @@ public class SubcategoryImage {
 	private Long imageUrlId;
 	
 	private String imageUrl;
+	private String description;
+	
+	@Column(nullable = false)
+	private String altText;
 	
 	@ManyToOne
 	@JoinColumn(name = "subcategoryId")

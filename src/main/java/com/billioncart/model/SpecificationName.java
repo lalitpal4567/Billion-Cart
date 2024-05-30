@@ -19,9 +19,9 @@ import lombok.NoArgsConstructor;
 public class SpecificationName {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long specNameId;
+	private Long nameId;
 	
-	private String specName;
+	private String name;
 	
 	@ManyToOne
 	@JoinColumn(name = "subcategory_id")

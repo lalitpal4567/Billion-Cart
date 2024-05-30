@@ -40,14 +40,14 @@ public class Subcategory {
 	@JsonIgnore
 	private Category category;
 		
-	@OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<SubcategoryImage> imageUrls;
 	
-	@OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
 	private List<Product> products;
 	
-	@OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
-	private List<SpecificationName> specNames;
+	private List<SpecificationName> specificationNames;
 }

@@ -37,23 +37,32 @@ public class Product {
 	private int quantity;
 	
 	@Column(nullable = false)
-	private float price;
+	private float currentPrice;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+	@Column(nullable = false)
+	private float previousPrice;
+	
+	@Column(nullable = false)
+	private String description;
+	
+	@Column(nullable = false)
+	private String details;
+	
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
 	private List<CartItem> cartItems;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
 	private List<Review> reviews;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-	private List<SpecificationValue> specValues;
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<SpecificationValue> specificationValues;
 	
 	@ManyToOne
 	@JoinColumn(name = "subcategory_id")
 	private Subcategory subcategory;
 	
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-	private List<ProductImage> imageUrls;
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProductImage> productImages;
 }

@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.billioncart.exception.CategoryNotFoundException;
 import com.billioncart.exception.ResourceNotFoundException;
 import com.billioncart.mapper.CategoryRequestMapper;
 import com.billioncart.mapper.CategoryResponseMapper;
@@ -36,8 +38,9 @@ public class CategoryServiceImpl implements CategoryService {
 	}
 	
 
+	@Transactional
 	@Override
-	public void removeCategory(Long categoryId) {
+	public void removeCategoryById(Long categoryId) {
 		Category existingCatgory = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category does not exist."));
 		categoryRepository.deleteById(categoryId);
 	}
@@ -45,5 +48,16 @@ public class CategoryServiceImpl implements CategoryService {
 	@Override
 	public List<Category> getAllCategories(){
 		return categoryRepository.findAll();
+	}
+	
+	public CategoryResponse updateCategory(Long categoryId, CategoryRequest request) {
+		Category existingCategory = categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+		
+		existingCategory.setName(request.getName());
+		existingCategory.setDescription(request.getDescription());
+		existingCategory.setImageUrl(request.getImageUrl());
+		
+		Category updatedCategory = categoryRepository.save(existingCategory);
+		return CategoryResponseMapper.INSTANCE.toPayload(updatedCategory);
 	}
 }

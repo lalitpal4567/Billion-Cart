@@ -3,7 +3,8 @@ package com.billioncart.payload;
 import lombok.Data;
 
 @Data
-public class SpecificationValueRequest {
+public class SpecificationResponse {
+	private Long valueId;
+	private String name;
 	private String value;
-	private Long nameId;
 }

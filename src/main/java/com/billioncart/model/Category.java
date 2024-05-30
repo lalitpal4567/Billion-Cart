@@ -1,5 +1,7 @@
 package com.billioncart.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -31,6 +33,6 @@ public class Category {
 	@Column(name = "img_url")
 	private String imageUrl;
 	
-	@OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-	private Set<Subcategory> subcategories;
+	@OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Subcategory> subcategories;
 }

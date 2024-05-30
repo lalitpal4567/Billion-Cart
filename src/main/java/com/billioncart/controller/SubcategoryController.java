@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +36,20 @@ public class SubcategoryController {
 			res.put("message", "Subcategory added successfully");
 			res.put("Subcategory", createdSubcateogry);
 			return ResponseEntity.status(HttpStatus.CREATED).body(res);
+		} catch (Exception e) {
+			res.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.OK).body(res);
+		}
+	}
+	
+	@DeleteMapping("/remove-subcategory/{id}")
+	public ResponseEntity<Map<String, Object>> removeSubcategoryById(@PathVariable(name = "id") Long subcategoryId){
+		Map<String, Object> res = new LinkedHashMap<>();
+		
+		try {
+			subcategoryService.removeSubcategoryById(subcategoryId);
+			res.put("message", "Subcategory removed successfully");
+			return ResponseEntity.status(HttpStatus.OK).body(res);
 		} catch (Exception e) {
 			res.put("error", e.getMessage());
 			return ResponseEntity.status(HttpStatus.OK).body(res);

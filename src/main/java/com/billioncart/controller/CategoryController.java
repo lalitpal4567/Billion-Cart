@@ -1,6 +1,5 @@
 package com.billioncart.controller;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,13 +44,29 @@ public class CategoryController {
 		}
 	}
 	
+	
 	@DeleteMapping("/remove-category/{id}")
-	public ResponseEntity<Map<String, Object>> removeCategory(@PathVariable(name = "id") Long categoryId){
+	public ResponseEntity<Map<String, Object>> removeCategoryById(@PathVariable(name = "id") Long categoryId){
 		Map<String, Object> res = new LinkedHashMap<>();
 		
 		try {
-			categoryService.removeCategory(categoryId);
+			categoryService.removeCategoryById(categoryId);
 			res.put("message", "Category removed successfully");
+			return ResponseEntity.status(HttpStatus.OK).body(res);
+		} catch (Exception e) {
+			res.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.OK).body(res);
+		}
+	}
+	
+	
+	@PutMapping("/update-category/{id}")
+	public ResponseEntity<Map<String, Object>> updateCategory(@PathVariable(name = "id") Long categoryId, @RequestBody CategoryRequest request){
+		Map<String, Object> res = new LinkedHashMap<>();
+		try {
+			CategoryResponse updateCategory = categoryService.updateCategory(categoryId, request);
+			res.put("message", "Category updated successfully");
+			res.put("Category", updateCategory);
 			return ResponseEntity.status(HttpStatus.OK).body(res);
 		} catch (Exception e) {
 			res.put("error", e.getMessage());

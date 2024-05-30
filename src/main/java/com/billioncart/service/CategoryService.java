@@ -8,6 +8,7 @@ import com.billioncart.payload.CategoryResponse;
 
 public interface CategoryService {
 	CategoryResponse addCategory(CategoryRequest request);
-	void removeCategory(Long categoryId);
-	public List<Category> getAllCategories();
+	void removeCategoryById(Long categoryId);
+	CategoryResponse updateCategory(Long categoryId, CategoryRequest request);
+	List<Category> getAllCategories();
 }

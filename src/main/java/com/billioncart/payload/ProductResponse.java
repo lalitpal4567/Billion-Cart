@@ -1,6 +1,7 @@
 package com.billioncart.payload;
 
-import com.billioncart.model.Subcategory;
+
+import java.util.List;
 
 import lombok.Data;
 
@@ -9,8 +10,14 @@ public class ProductResponse {
 	private Long productId;
 	private String name;
 	private String description;
+	private String details;
 	private int quantity;
-	private float price;
-	private Subcategory subcategoryId;
-//	private Specification
+	private float currentPrice;
+	private float previousPrice;
+	private SubcategoryDetailsResponse subcategory;
+	private CategoryDetailsResponse category;
+	private List<ProductImageResponse> productImages;
+	private List<SpecificationResponse> specifications;
 }
+
+

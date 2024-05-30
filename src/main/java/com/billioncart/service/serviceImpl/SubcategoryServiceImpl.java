@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.billioncart.exception.ResourceNotFoundException;
+import com.billioncart.exception.SubcategoryNotFoundException;
 import com.billioncart.mapper.SpecificationNameRequestMapper;
 import com.billioncart.mapper.SubcategoryImageRequestMapper;
 import com.billioncart.mapper.SubcategoryRequestMapper;
@@ -29,15 +30,14 @@ import com.billioncart.service.SubcategoryService;
 public class SubcategoryServiceImpl implements SubcategoryService {
 	private SubcategoryRepository subcategoryRepository;
 	private CategoryRepository categoryRepository;
-	private SubcategoryImageRepository subcategoryImageRepository;
 
 	public SubcategoryServiceImpl(SubcategoryRepository subcategoryRepository, CategoryRepository categoryRepository,
 			SubcategoryImageRepository subcategoryImageRepository) {
 		this.subcategoryRepository = subcategoryRepository;
 		this.categoryRepository = categoryRepository;
-		this.subcategoryImageRepository = subcategoryImageRepository;
 	}
 
+	@Override
 	@Transactional
 	public SubcategoryResponse addSubcategory(SubcategoryRequest request) {
 		Category existingCategory = categoryRepository.findById(request.getCategoryId())
@@ -51,14 +51,14 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		Subcategory newSubcategory = SubcategoryRequestMapper.INSTANCE.toEntity(request);
 		newSubcategory.setCategory(existingCategory);
 
-		List<SubcategoryImageRequest> lists = request.getImageUrls();
+		List<SubcategoryImageRequest> lists = request.getSubcategoryImages();
 		List<SubcategoryImage> images = lists.stream().map(url -> {
 			SubcategoryImage image = SubcategoryImageRequestMapper.INSTANCE.toEntity(url);
 			image.setSubcategory(newSubcategory);
 			return image;
 		}).collect(Collectors.toList());
 
-		List<SpecificationNameRequest> specNameList = request.getSpecNames();
+		List<SpecificationNameRequest> specNameList = request.getSpecificationNames();
 		List<SpecificationName> specs = specNameList.stream().map(spec ->{
 			SpecificationName name = SpecificationNameRequestMapper.INSTANCE.toEntity(spec);
 			name.setSubcategory(newSubcategory);
@@ -67,7 +67,7 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		
 		
 	    newSubcategory.setImageUrls(images);
-	    newSubcategory.setSpecNames(specs);
+	    newSubcategory.setSpecificationNames(specs);
 	    
 	    
 		Subcategory updatedSubcategory = subcategoryRepository.save(newSubcategory);
@@ -75,4 +75,13 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		response.setCategoryId(existingCategory.getCategoryId());
 		return response;
 	}
+	
+	
+	@Override
+	public void removeSubcategoryById(Long subcategoryId) {
+		Subcategory existingSubcategory = subcategoryRepository.findById(subcategoryId).orElseThrow(() -> new SubcategoryNotFoundException("Subcategory not found"));
+		subcategoryRepository.deleteById(subcategoryId);
+	}
+	
+	
 }

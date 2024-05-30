@@ -24,9 +24,9 @@ import lombok.NoArgsConstructor;
 public class SpecificationValue {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long specValueId;
+	private Long valueId;
 	
-	private String specValue;
+	private String value;
 	
 	@ManyToOne
 	@JoinColumn(name = "product_Id")
@@ -36,5 +36,5 @@ public class SpecificationValue {
 	@ManyToOne
     @JoinColumn(name = "spec_name_id")
 	@JsonIgnore
-    private SpecificationName specName;
+    private SpecificationName specificationName;
 }

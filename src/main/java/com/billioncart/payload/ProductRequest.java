@@ -10,9 +10,11 @@ import lombok.Data;
 public class ProductRequest {
 	private String name;
 	private String description;
+	private String details;
 	private Long subcategoryId;
+	private float currentPrice;
+	private float previousPrice;
 	private int quantity;
-	private float price;
-	private List<SpecificationValueRequest> specValues;
-	private List<ProductImageRequest> imageUrls;
+	private List<SpecificationValueRequest> specificationValues;
+	private List<ProductImageRequest> productImages;
 }

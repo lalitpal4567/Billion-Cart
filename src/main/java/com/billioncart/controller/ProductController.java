@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.billioncart.model.Product;
 import com.billioncart.payload.ProductRequest;
+import com.billioncart.payload.ProductResponse;
 import com.billioncart.service.ProductService;
 
 @RestController
@@ -33,7 +34,7 @@ public class ProductController {
 		Map<String, Object> res = new LinkedHashMap<>();
 		
 		try {
-			Product createdProduct = productService.addProduct(request);
+			ProductResponse createdProduct = productService.addProduct(request);
 			res.put("message", "Product added successfully");
 			res.put("Product", createdProduct);
 			return ResponseEntity.status(HttpStatus.CREATED).body(res);

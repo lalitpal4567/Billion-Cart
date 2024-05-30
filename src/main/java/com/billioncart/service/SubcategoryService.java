@@ -5,4 +5,5 @@ import com.billioncart.payload.SubcategoryResponse;
 
 public interface SubcategoryService {
 	SubcategoryResponse addSubcategory(SubcategoryRequest request);
+	void removeSubcategoryById(Long subcategoryId);
 }
