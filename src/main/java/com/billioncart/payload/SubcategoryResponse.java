@@ -13,7 +13,7 @@ public class SubcategoryResponse {
 	private String name;
 	private String description;
 	private Long categoryId;
-	private List<SubcategoryImage> imageUrls;
+	private List<SubcategoryImage> subcategoryImages;
 	private List<SpecificationName> specificationNames;
 	
 }

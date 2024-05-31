@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class AddressResponse {
+	private Long addressId;
 	private String fullName;
 	private String mobileNo;
 	private int street;

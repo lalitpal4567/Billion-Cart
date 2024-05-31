@@ -25,9 +25,6 @@ public class UserServiceImpl implements UserService{
 	
 	public UserResponse updateProfile(UserRequest request) {
 		// Get the authenticated user's username
-//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String username = authentication.getName();
-		
 		String username = UserDetailsUtils.getAuthenticatedUsername();        
         // find the account by username
         Account existingAccount = accountRepository.findByUsername(username)
@@ -47,7 +44,6 @@ public class UserServiceImpl implements UserService{
         
         // save user to user repository
        User updatedUser = userRepository.save(user);
-       System.out.println(username);
        
        // convert saved user entity back to userResponse payload
         return UserResponseMapper.INSTANCE.toPayload(user);

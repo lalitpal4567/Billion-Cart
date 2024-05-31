@@ -41,7 +41,7 @@ public class Subcategory {
 	private Category category;
 		
 	@OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<SubcategoryImage> imageUrls;
+	private List<SubcategoryImage> subcategoryImages;
 	
 	@OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
