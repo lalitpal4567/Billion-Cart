@@ -4,12 +4,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.billioncart.exception.ResourceNotFoundException;
 import com.billioncart.exception.SubcategoryNotFoundException;
 import com.billioncart.mapper.SpecificationNameRequestMapper;
+import com.billioncart.mapper.SpecificationNameResponseMapper;
+import com.billioncart.mapper.SpecificationNameValueResponseMapper;
 import com.billioncart.mapper.SubcategoryImageRequestMapper;
 import com.billioncart.mapper.SubcategoryRequestMapper;
 import com.billioncart.mapper.SubcategoryResponseMapper;
@@ -18,6 +23,7 @@ import com.billioncart.model.SpecificationName;
 import com.billioncart.model.Subcategory;
 import com.billioncart.model.SubcategoryImage;
 import com.billioncart.payload.SpecificationNameRequest;
+import com.billioncart.payload.SpecificationNameResponse;
 import com.billioncart.payload.SubcategoryImageRequest;
 import com.billioncart.payload.SubcategoryRequest;
 import com.billioncart.payload.SubcategoryResponse;
@@ -93,10 +99,12 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		
 		Subcategory subcategory = SubcategoryRequestMapper.INSTANCE.toEntity(request);
 		subcategory.setSubcategoryId(existingSubcategory.getSubcategoryId());
+		subcategory.setCategory(existingSubcategory.getCategory());
 
 		
 		List<SubcategoryImage> subcategoryImages = getSubcategoryImages(request, subcategory);
 		List<SpecificationName> specificationNames = getSpecificationNames(request, subcategory);
+		
 		subcategory.setSubcategoryImages(subcategoryImages);
 		subcategory.setSpecificationNames(specificationNames);
 		subcategory.setProducts(existingSubcategory.getProducts());
@@ -106,15 +114,26 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		return response;
 	}
 	
-	public List<SubcategoryResponse> getAllSubcategories(){
-		List<Subcategory> subcategories = subcategoryRepository.findAll();
-		
-		List<SubcategoryResponse> subcategoryResponses = subcategories.stream().map(subcat ->{
+	public Page<SubcategoryResponse> getAllSubcategories(Integer page, Integer size){
+		Page<Subcategory> subcategories = subcategoryRepository.findAll(PageRequest.of(page, size));
+
+		Page<SubcategoryResponse> subcategoryRespPage = subcategories.map(subcat ->{
 			SubcategoryResponse response = SubcategoryResponseMapper.INSTANCE.toPayload(subcat);
-			response.setCategoryId(subcat.getCategory().getCategoryId());
+			response.setSpecificationNames(getAllSpecificationNames(subcat));
 			return response;
+		});
+		return subcategoryRespPage;
+	}
+	
+	private List<SpecificationNameResponse> getAllSpecificationNames(Subcategory subcat) {
+		List<SpecificationNameResponse> specificationNames = subcat.getSpecificationNames().stream().map(name ->{
+			SpecificationNameResponse specificationNameResponse = SpecificationNameResponseMapper.INSTANCE.toPayload(name);
+			return specificationNameResponse;
 		}).collect(Collectors.toList());
+		return specificationNames;
+	}
+	
+	public Page<SubcategoryResponse> getSubcategoriesByCategoryId(Long categoryId){
 		
-		return subcategoryResponses;
 	}
 }

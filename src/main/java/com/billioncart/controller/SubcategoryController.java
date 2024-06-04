@@ -1,9 +1,9 @@
 package com.billioncart.controller;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.billioncart.model.Subcategory;
 import com.billioncart.payload.SubcategoryRequest;
 import com.billioncart.payload.SubcategoryResponse;
 import com.billioncart.service.SubcategoryService;
@@ -73,18 +73,11 @@ public class SubcategoryController {
 		}
 	}
 	
-	
 	@GetMapping("/subcategories-list")
-	public ResponseEntity<Map<String, Object>> getAllSubcategories(){
-		Map<String, Object> res = new LinkedHashMap<>();
-		try {
-			List<SubcategoryResponse> list = subcategoryService.getAllSubcategories();
-			res.put("Subcategories", list);
-			return ResponseEntity.status(HttpStatus.OK).body(res);
-		} catch (Exception e) {
-			res.put("error", e.getMessage());
-			return ResponseEntity.status(HttpStatus.OK).body(res);
-		}
+	public Page<SubcategoryResponse> getAllSubcategories(
+			@RequestParam(name = "page", defaultValue = "0") Integer page, 
+			@RequestParam(name = "size", defaultValue = "2") Integer size){
+		
+				return subcategoryService.getAllSubcategories(page, size);
 	}
-	
 }

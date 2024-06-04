@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class SpecificationNameResponse {
-	private Long specNameId;
-	private String specName;
+	private Long nameId;
+	private String name;
 }

@@ -1,10 +1,12 @@
 package com.billioncart.model;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import com.billioncart.audit.UserDateAudit;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,12 +20,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Table(name = "wishlist_table")
-public class Wishlist extends UserDateAudit{
+public class Wishlist{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long wishlistId;
 	
-	@OneToMany(mappedBy = "wishlist", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "wishlist", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WishlistItem> wishlistItems;
-
+	
+	@Column(name = "created_at")
+	private Timestamp createdAt;
+	
+	@Column(name = "updated_at")
+	private Timestamp updatedAt;
 }

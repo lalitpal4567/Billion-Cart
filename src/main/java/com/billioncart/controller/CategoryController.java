@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.billioncart.model.Category;
@@ -21,7 +23,7 @@ import com.billioncart.payload.CategoryResponse;
 import com.billioncart.service.CategoryService;
 
 @RestController
-@RequestMapping("/api/v1/admin/categories")
+@RequestMapping("/api/v1/admin/category")
 public class CategoryController {
 	private CategoryService categoryService;
 	
@@ -59,6 +61,20 @@ public class CategoryController {
 		}
 	}
 	
+	@GetMapping("/get-category/{id}")
+	public ResponseEntity<Map<String, Object>> addCategory(@PathVariable(name = "id") Long categoryId){
+		Map<String, Object> res = new LinkedHashMap<>();
+		
+		try {
+			CategoryResponse existingCategory  = categoryService.getCategoryById(categoryId);
+			res.put("message", "Category found successfully");
+			res.put("Category", existingCategory);
+			return ResponseEntity.status(HttpStatus.OK).body(res);
+		} catch (Exception e) {
+			res.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.OK).body(res);
+		}
+	}
 	
 	@PutMapping("/update-category/{id}")
 	public ResponseEntity<Map<String, Object>> updateCategory(@PathVariable(name = "id") Long categoryId, @RequestBody CategoryRequest request){
@@ -74,16 +90,11 @@ public class CategoryController {
 		}
 	}
 	
-	@GetMapping("/categories-list")
-	public ResponseEntity<Map<String, Object>> getAllCategories(){
-		Map<String, Object> res = new LinkedHashMap<>();
-		try {
-			List<Category> list = categoryService.getAllCategories();
-			res.put("Categories", list);
-			return ResponseEntity.status(HttpStatus.OK).body(res);
-		} catch (Exception e) {
-			res.put("error", e.getMessage());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
-		}
-	}
+	 @GetMapping("/categories-list")
+	    public Page<CategoryResponse> getCategories(
+	        @RequestParam(name = "page", defaultValue = "0") Integer page,
+	        @RequestParam(name = "size", defaultValue = "2") Integer size
+	    ) {
+	        return categoryService.getAllCategories(page, size);
+	    }
 }

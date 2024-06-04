@@ -1,6 +1,6 @@
 package com.billioncart.model;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -26,7 +26,7 @@ public class Cart{
 	@OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
     private List<CartItem> cartItems;
 	
-	@Column(name = "created_at", updatable = false)
+	@Column(name = "created_at")
 	private Timestamp createdAt;
 	
 	@Column(name = "updated_at")

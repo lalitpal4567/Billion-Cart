@@ -12,7 +12,8 @@ public class CorsConfig {
 //		final long MAX_AGE_SECS = 3600;
 
 		registry.addMapping("/**")
-					  .allowedOrigins("*")
+//					  .allowedOrigins("*")
+					  .allowedOrigins("http://localhost:3000")
 					  .allowedMethods("GET", "POST", "PUT", "DELETE")
 					  .allowedHeaders("*");
 //					  .maxAge(MAX_AGE_SECS);

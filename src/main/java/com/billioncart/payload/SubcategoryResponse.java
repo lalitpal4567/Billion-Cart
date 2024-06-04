@@ -2,7 +2,6 @@ package com.billioncart.payload;
 
 import java.util.List;
 
-import com.billioncart.model.SpecificationName;
 import com.billioncart.model.SubcategoryImage;
 
 import lombok.Data;
@@ -14,6 +13,5 @@ public class SubcategoryResponse {
 	private String description;
 	private Long categoryId;
 	private List<SubcategoryImage> subcategoryImages;
-	private List<SpecificationName> specificationNames;
-	
+	private List<SpecificationNameResponse> specificationNames;
 }
