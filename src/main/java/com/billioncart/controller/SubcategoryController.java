@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.billioncart.payload.CategoryResponse;
 import com.billioncart.payload.SubcategoryRequest;
 import com.billioncart.payload.SubcategoryResponse;
 import com.billioncart.service.SubcategoryService;
@@ -29,12 +30,12 @@ public class SubcategoryController {
 		this.subcategoryService = subcategoryService;
 	}
 	
-	@PostMapping("/add-subcategory")
-	public ResponseEntity<Map<String, Object>> addSubcategory(@RequestBody SubcategoryRequest request){
+	@PostMapping("/add-subcategory/{id}")
+	public ResponseEntity<Map<String, Object>> addSubcategory(@PathVariable(name = "id") Long categoryid, @RequestBody SubcategoryRequest request){
 		Map<String, Object> res = new LinkedHashMap<>();
 		
 		try {
-			SubcategoryResponse createdSubcateogry = subcategoryService.addSubcategory(request);
+			SubcategoryResponse createdSubcateogry = subcategoryService.addSubcategory(categoryid,request);
 			res.put("message", "Subcategory added successfully");
 			res.put("Subcategory", createdSubcateogry);
 			return ResponseEntity.status(HttpStatus.CREATED).body(res);
@@ -73,11 +74,35 @@ public class SubcategoryController {
 		}
 	}
 	
+	@GetMapping("/get-subcategory/{id}")
+	public ResponseEntity<Map<String, Object>> getSubcategoryById(@PathVariable(name = "id") Long subcategoryId){
+		Map<String, Object> res = new LinkedHashMap<>();
+		
+		try {
+			SubcategoryResponse existingSubcategory  = subcategoryService.getSubcategoryById(subcategoryId);
+			res.put("message", "Subcategory found successfully");
+			res.put("Subcategory", existingSubcategory);
+			return ResponseEntity.status(HttpStatus.OK).body(res);
+		} catch (Exception e) {
+			res.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.OK).body(res);
+		}
+	}
+	
 	@GetMapping("/subcategories-list")
 	public Page<SubcategoryResponse> getAllSubcategories(
 			@RequestParam(name = "page", defaultValue = "0") Integer page, 
 			@RequestParam(name = "size", defaultValue = "2") Integer size){
 		
 				return subcategoryService.getAllSubcategories(page, size);
+	}
+	
+	@GetMapping("/subcategories-categories/{id}")
+	public Page<SubcategoryResponse> getSubcategoriesByCategoryId(
+			@RequestParam(name = "page", defaultValue = "0") Integer page, 
+			@RequestParam(name = "size", defaultValue = "2") Integer size, 
+			@PathVariable(name = "id") Long categoryId){
+		
+				return subcategoryService.getSubcategoriesByCategoryId(page, size, categoryId);
 	}
 }

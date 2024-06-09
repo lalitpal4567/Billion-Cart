@@ -3,17 +3,22 @@ package com.billioncart.service.serviceImpl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.billioncart.exception.ProductNotFoundException;
 import com.billioncart.exception.ResourceNotFoundException;
+import com.billioncart.exception.SubcategoryNotFoundException;
 import com.billioncart.mapper.CategoryDetailsResponseMapper;
 import com.billioncart.mapper.ProductImageRequestMapper;
+import com.billioncart.mapper.ProductImageResponseMapper;
 import com.billioncart.mapper.ProductRequestMapper;
 import com.billioncart.mapper.ProductResponseMapper;
 import com.billioncart.mapper.SpecificationNameValueResponseMapper;
 import com.billioncart.mapper.SpecificationValueRequestMapper;
+import com.billioncart.mapper.SubcategoryDetailsResponseMapper;
 import com.billioncart.model.Product;
 import com.billioncart.model.ProductImage;
 import com.billioncart.model.SpecificationName;
@@ -21,15 +26,18 @@ import com.billioncart.model.SpecificationValue;
 import com.billioncart.model.Subcategory;
 import com.billioncart.payload.CategoryDetailsResponse;
 import com.billioncart.payload.ProductImageRequest;
+import com.billioncart.payload.ProductImageResponse;
 import com.billioncart.payload.ProductRequest;
 import com.billioncart.payload.ProductResponse;
 import com.billioncart.payload.SpecificationResponse;
 import com.billioncart.payload.SpecificationValueRequest;
+import com.billioncart.payload.SubcategoryDetailsResponse;
 import com.billioncart.repository.ProductRepository;
 import com.billioncart.repository.SpecificationNameRepository;
 import com.billioncart.repository.SpecificationValueRepository;
 import com.billioncart.repository.SubcategoryRepository;
 import com.billioncart.service.ProductService;
+
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -42,49 +50,26 @@ public class ProductServiceImpl implements ProductService {
 			SpecificationNameRepository specificationNameRepository) {
 		this.productRepository = productRepository;
 		this.subcategoryRepository = subcategoryRepository;
-		this.specificationNameRepository = specificationNameRepository;
+		ProductServiceImpl.specificationNameRepository = specificationNameRepository;
 	}
 
+	@Override
 	@Transactional
-	public ProductResponse addProduct(ProductRequest request) {
-		// fetch the existing subcategory by Id
-		Subcategory existingSubcategory = subcategoryRepository.findById(request.getSubcategoryId())
+	public ProductResponse addProduct(Long subcategoryId, ProductRequest request) {
+		Subcategory existingSubcategory = subcategoryRepository.findById(subcategoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
 
-		// map the ProductRequest to a Product entity
 		Product newProduct = ProductRequestMapper.INSTANCE.toEntity(request);
-		// set the subcategory for new product
 		newProduct.setSubcategory(existingSubcategory);
 
-		// get the product images from the request and set the product reference for
-		// each image
 		List<ProductImage> productImages = getProductImages(request, newProduct);
-
-		// get the specification values from the request and set the product reference
-		// for each value
 		List<SpecificationValue> specificationValues = getSpecificationValues(request, newProduct);
 
-		// set the product images in the new product
 		newProduct.setProductImages(productImages);
-		// set the specification values in the new product
 		newProduct.setSpecificationValues(specificationValues);
-		// save the new product to the repository
 		Product createdProduct = productRepository.save(newProduct);
-
-		// get the specification values of the created product
-		List<SpecificationResponse> specificationResponses = getSpecificationResponses(createdProduct);
-
-		// map the created product to its response payload
-		ProductResponse productResponse = ProductResponseMapper.INSTANCE.toPayload(createdProduct);
-		// set the specification name-value responses in the product response
-		productResponse.setSpecifications(specificationResponses);
-		// map the subcategory's category to its response payload
-		CategoryDetailsResponse categoryResponse = CategoryDetailsResponseMapper.INSTANCE
-				.toPayload(existingSubcategory.getCategory());
-		// set the category response in the product response
-		productResponse.setCategory(categoryResponse);
-		// return the complete product response
-		return productResponse;
+		
+		return getProductResponse(createdProduct);
 	}
 
 	// helper method to get product images from the request and set the product
@@ -131,6 +116,7 @@ public class ProductServiceImpl implements ProductService {
 		}).collect(Collectors.toList());
 	}
 
+	@Override
 	public void removeProduct(Long productId) {
 		Product existingProduct = productRepository.findById(productId)
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
@@ -138,14 +124,57 @@ public class ProductServiceImpl implements ProductService {
 		productRepository.deleteById(productId);
 	}
 
-	public Product getProductById(Long productId) {
-		Product existingProduct = productRepository.findById(productId)
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
-		return existingProduct;
+	private static ProductResponse getProductResponse(Product product) {
+		CategoryDetailsResponse categoryDetailsResponse = CategoryDetailsResponseMapper.INSTANCE
+				.toPayload(product.getSubcategory().getCategory());
+		SubcategoryDetailsResponse subcategoryDetailsResponse = SubcategoryDetailsResponseMapper.INSTANCE
+				.toPayload(product.getSubcategory());
+
+		ProductResponse productResponse = ProductResponseMapper.INSTANCE.toPayload(product);
+		productResponse.setProductImages(getImageResponse(product));
+		productResponse.setSpecifications(getSpecificationResponses(product));
+		productResponse.setCategory(categoryDetailsResponse);
+		productResponse.setSubcategory(subcategoryDetailsResponse);
+
+		return productResponse;
 	}
 
+	private static List<ProductImageResponse> getImageResponse(Product product) {
+		List<ProductImage> productImages = product.getProductImages();
+		List<ProductImageResponse> productImageResponses = productImages.stream().map(img -> {
+			ProductImageResponse productImageResponse = ProductImageResponseMapper.INSTANCE.toPayload(img);
+			return productImageResponse;
+		}).collect(Collectors.toList());
+
+		return productImageResponses;
+	}
+
+	@Override
+	public ProductResponse getProductById(Long productId) {
+		Product existingProduct = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+		return getProductResponse(existingProduct);
+	}
+
+	@Override
 	@Transactional
-	public List<Product> getAllProducts() {
-		return productRepository.findAll();
+	public Page<ProductResponse> getProductBySubcategoryId(Long subcategoryId, Integer page, Integer size) {
+		Subcategory subcategory = subcategoryRepository.findById(subcategoryId)
+				.orElseThrow(() -> new SubcategoryNotFoundException("Subcategory not found"));
+
+		Page<Product> productPage = productRepository.findAllBySubcategory(PageRequest.of(page, size), subcategory);
+
+		Page<ProductResponse> productResponsePage = productPage.map(p -> getProductResponse(p));
+		return productResponsePage;
+	}
+
+	@Override
+	@Transactional
+	public Page<ProductResponse> getAllProducts(Integer page, Integer size) {
+		Page<Product> productsPage = productRepository.findAll(PageRequest.of(page, size));
+
+		Page<ProductResponse> productsResponsePage = productsPage.map(product -> getProductResponse(product));
+		return productsResponsePage;
 	}
 }

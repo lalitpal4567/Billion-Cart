@@ -1,14 +1,18 @@
 package com.billioncart.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
 
-import com.billioncart.model.Product;
 import com.billioncart.payload.ProductRequest;
 import com.billioncart.payload.ProductResponse;
 
 public interface ProductService {
-	ProductResponse addProduct(ProductRequest request);
+	ProductResponse addProduct(Long subcategoryId, ProductRequest request);
+	
 	void removeProduct(Long productId);
-	Product getProductById(Long productId);
-	List<Product> getAllProducts();
+	
+	ProductResponse getProductById(Long productId);
+	
+	Page<ProductResponse> getProductBySubcategoryId(Long subcategoryId, Integer page, Integer size);
+	
+	Page<ProductResponse> getAllProducts(Integer page, Integer size);
 }

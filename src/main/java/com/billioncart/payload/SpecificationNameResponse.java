@@ -6,4 +6,5 @@ import lombok.Data;
 public class SpecificationNameResponse {
 	private Long nameId;
 	private String name;
+	private SpecificationSubcategoryResponse subcategory;
 }

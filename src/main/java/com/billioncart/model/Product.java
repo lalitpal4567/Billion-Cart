@@ -48,6 +48,8 @@ public class Product {
 	@Column(nullable = false)
 	private String details;
 	
+	private String model;
+	
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
 	private List<CartItem> cartItems;

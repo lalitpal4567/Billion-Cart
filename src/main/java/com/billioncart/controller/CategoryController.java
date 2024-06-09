@@ -26,15 +26,15 @@ import com.billioncart.service.CategoryService;
 @RequestMapping("/api/v1/admin/category")
 public class CategoryController {
 	private CategoryService categoryService;
-	
+
 	public CategoryController(CategoryService categoryService) {
 		this.categoryService = categoryService;
 	}
-	
+
 	@PostMapping("/add-category")
-	public ResponseEntity<Map<String, Object>> addCategory(@RequestBody CategoryRequest request){
+	public ResponseEntity<Map<String, Object>> addCategory(@RequestBody CategoryRequest request) {
 		Map<String, Object> res = new LinkedHashMap<>();
-		
+
 		try {
 			CategoryResponse createdCateogry = categoryService.addCategory(request);
 			res.put("message", "Category added successfully");
@@ -45,12 +45,11 @@ public class CategoryController {
 			return ResponseEntity.status(HttpStatus.OK).body(res);
 		}
 	}
-	
-	
+
 	@DeleteMapping("/remove-category/{id}")
-	public ResponseEntity<Map<String, Object>> removeCategoryById(@PathVariable(name = "id") Long categoryId){
+	public ResponseEntity<Map<String, Object>> removeCategoryById(@PathVariable(name = "id") Long categoryId) {
 		Map<String, Object> res = new LinkedHashMap<>();
-		
+
 		try {
 			categoryService.removeCategoryById(categoryId);
 			res.put("message", "Category removed successfully");
@@ -60,13 +59,13 @@ public class CategoryController {
 			return ResponseEntity.status(HttpStatus.OK).body(res);
 		}
 	}
-	
+
 	@GetMapping("/get-category/{id}")
-	public ResponseEntity<Map<String, Object>> addCategory(@PathVariable(name = "id") Long categoryId){
+	public ResponseEntity<Map<String, Object>> getCategoryById(@PathVariable(name = "id") Long categoryId) {
 		Map<String, Object> res = new LinkedHashMap<>();
-		
+
 		try {
-			CategoryResponse existingCategory  = categoryService.getCategoryById(categoryId);
+			CategoryResponse existingCategory = categoryService.getCategoryById(categoryId);
 			res.put("message", "Category found successfully");
 			res.put("Category", existingCategory);
 			return ResponseEntity.status(HttpStatus.OK).body(res);
@@ -75,9 +74,10 @@ public class CategoryController {
 			return ResponseEntity.status(HttpStatus.OK).body(res);
 		}
 	}
-	
+
 	@PutMapping("/update-category/{id}")
-	public ResponseEntity<Map<String, Object>> updateCategory(@PathVariable(name = "id") Long categoryId, @RequestBody CategoryRequest request){
+	public ResponseEntity<Map<String, Object>> updateCategory(@PathVariable(name = "id") Long categoryId,
+			@RequestBody CategoryRequest request) {
 		Map<String, Object> res = new LinkedHashMap<>();
 		try {
 			CategoryResponse updateCategory = categoryService.updateCategory(categoryId, request);
@@ -89,12 +89,10 @@ public class CategoryController {
 			return ResponseEntity.status(HttpStatus.OK).body(res);
 		}
 	}
-	
-	 @GetMapping("/categories-list")
-	    public Page<CategoryResponse> getCategories(
-	        @RequestParam(name = "page", defaultValue = "0") Integer page,
-	        @RequestParam(name = "size", defaultValue = "2") Integer size
-	    ) {
-	        return categoryService.getAllCategories(page, size);
-	    }
+
+	@GetMapping("/categories-list")
+	public Page<CategoryResponse> getCategories(@RequestParam(name = "page", defaultValue = "0") Integer page,
+			@RequestParam(name = "size", defaultValue = "2") Integer size) {
+		return categoryService.getAllCategories(page, size);
+	}
 }

@@ -6,4 +6,6 @@ import lombok.Data;
 public class ProductImageResponse {
 	private Long imageUrlId;
 	private String imageUrl;
+	private String description;
+	private String altText;
 }

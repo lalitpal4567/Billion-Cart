@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.billioncart.model.Product;
@@ -24,17 +26,18 @@ import com.billioncart.service.ProductService;
 @RequestMapping("/api/v1/admin/product")
 public class ProductController {
 	private ProductService productService;
-	
+
 	public ProductController(ProductService productService) {
 		this.productService = productService;
 	}
-	
-	@PostMapping("/add-product")
-	public ResponseEntity<Map<String, Object>> addProduct(@RequestBody ProductRequest request){
+
+	@PostMapping("/add-product/{id}")
+	public ResponseEntity<Map<String, Object>> addProduct(@PathVariable(name = "id") Long subcategoryId,
+			@RequestBody ProductRequest request) {
 		Map<String, Object> res = new LinkedHashMap<>();
-		
+
 		try {
-			ProductResponse createdProduct = productService.addProduct(request);
+			ProductResponse createdProduct = productService.addProduct(subcategoryId, request);
 			res.put("message", "Product added successfully");
 			res.put("Product", createdProduct);
 			return ResponseEntity.status(HttpStatus.CREATED).body(res);
@@ -43,11 +46,11 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.OK).body(res);
 		}
 	}
-	
+
 	@DeleteMapping("/remove-product/{id}")
-	public ResponseEntity<Map<String, Object>> removeProduct(@PathVariable(name = "id") Long productId){
+	public ResponseEntity<Map<String, Object>> removeProduct(@PathVariable(name = "id") Long productId) {
 		Map<String, Object> res = new LinkedHashMap<>();
-		
+
 		try {
 			productService.removeProduct(productId);
 			res.put("message", "Product removed successfully");
@@ -57,13 +60,13 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.OK).body(res);
 		}
 	}
-	
+
 	@GetMapping("/fetch-product/{id}")
-	public ResponseEntity<Map<String, Object>> getProductById(@PathVariable(name = "id") Long productId){
+	public ResponseEntity<Map<String, Object>> getProductById(@PathVariable(name = "id") Long productId) {
 		Map<String, Object> res = new LinkedHashMap<>();
-		
+
 		try {
-			Product existingProduct = productService.getProductById(productId);
+			ProductResponse existingProduct = productService.getProductById(productId);
 			res.put("message", "Product found successfully");
 			res.put("Product", existingProduct);
 			return ResponseEntity.status(HttpStatus.FOUND).body(res);
@@ -72,13 +75,18 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.OK).body(res);
 		}
 	}
+
+	@GetMapping("/product-subcategory-wise/{id}")
+	public Page<ProductResponse> getAllProductsBySubcategoryId(@RequestParam(name = "page", defaultValue = "0") Integer page,
+			@RequestParam(name = "size", defaultValue = "2") Integer size, @PathVariable(name = "id") Long subcategoryId) {
+
+		return productService.getProductBySubcategoryId(subcategoryId, page, size);
+	}
 	
 	@GetMapping("/product-list")
-	public ResponseEntity<Map<String, Object>> getAllProducts() {
-		Map<String, Object> res = new HashMap<>();
+	public Page<ProductResponse> getAllProducts(@RequestParam(name = "page", defaultValue = "0") Integer page,
+			@RequestParam(name = "size", defaultValue = "2") Integer size) {
 
-		List<Product> list = productService.getAllProducts();
-		res.put("Products", list);
-		return ResponseEntity.status(HttpStatus.OK).body(res);
+		return productService.getAllProducts(page, size);
 	}
 }

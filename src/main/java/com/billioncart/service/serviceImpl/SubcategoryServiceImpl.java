@@ -10,8 +10,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.billioncart.exception.CategoryNotFoundException;
 import com.billioncart.exception.ResourceNotFoundException;
 import com.billioncart.exception.SubcategoryNotFoundException;
+import com.billioncart.mapper.CategoryResponseMapper;
 import com.billioncart.mapper.SpecificationNameRequestMapper;
 import com.billioncart.mapper.SpecificationNameResponseMapper;
 import com.billioncart.mapper.SpecificationNameValueResponseMapper;
@@ -22,6 +24,7 @@ import com.billioncart.model.Category;
 import com.billioncart.model.SpecificationName;
 import com.billioncart.model.Subcategory;
 import com.billioncart.model.SubcategoryImage;
+import com.billioncart.payload.CategoryResponse;
 import com.billioncart.payload.SpecificationNameRequest;
 import com.billioncart.payload.SpecificationNameResponse;
 import com.billioncart.payload.SubcategoryImageRequest;
@@ -32,10 +35,13 @@ import com.billioncart.repository.SubcategoryImageRepository;
 import com.billioncart.repository.SubcategoryRepository;
 import com.billioncart.service.SubcategoryService;
 
+import jakarta.transaction.TransactionScoped;
+
 @Service
 public class SubcategoryServiceImpl implements SubcategoryService {
 	private SubcategoryRepository subcategoryRepository;
 	private CategoryRepository categoryRepository;
+	private SubcategoryImageRepository subcategoryImageRepository;
 
 	public SubcategoryServiceImpl(SubcategoryRepository subcategoryRepository, CategoryRepository categoryRepository,
 			SubcategoryImageRepository subcategoryImageRepository) {
@@ -45,8 +51,8 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 
 	@Override
 	@Transactional
-	public SubcategoryResponse addSubcategory(SubcategoryRequest request) {
-		Category existingCategory = categoryRepository.findById(request.getCategoryId())
+	public SubcategoryResponse addSubcategory(Long categoryId, SubcategoryRequest request) {
+		Category existingCategory = categoryRepository.findById(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category does not exist"));
 
 		Optional<Subcategory> existingSubcategory = subcategoryRepository.findByName(request.getName());
@@ -58,14 +64,12 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		newSubcategory.setCategory(existingCategory);
 		
 		List<SubcategoryImage> subcategoryImages = getSubcategoryImages(request, newSubcategory);
-		List<SpecificationName> specificationNames = getSpecificationNames(request, newSubcategory);
 	    newSubcategory.setSubcategoryImages(subcategoryImages);
-	    newSubcategory.setSpecificationNames(specificationNames);
-	    
 	    
 		Subcategory updatedSubcategory = subcategoryRepository.save(newSubcategory);
 		SubcategoryResponse response = SubcategoryResponseMapper.INSTANCE.toPayload(updatedSubcategory);
-		response.setCategoryId(existingCategory.getCategoryId());
+		CategoryResponse categoryResponse = CategoryResponseMapper.INSTANCE.toPayload(existingCategory);
+		response.setCategory(categoryResponse);
 		return response;
 	}
 	
@@ -75,16 +79,6 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 			SubcategoryImage image = SubcategoryImageRequestMapper.INSTANCE.toEntity(url);
 			image.setSubcategory(newSubcategory);
 			return image;
-		}).collect(Collectors.toList());
-	}
-	
-	
-	private static List<SpecificationName> getSpecificationNames(SubcategoryRequest request, Subcategory newSubcategory){
-		List<SpecificationNameRequest> specNameList = request.getSpecificationNames();
-		return specNameList.stream().map(spec ->{
-			SpecificationName name = SpecificationNameRequestMapper.INSTANCE.toEntity(spec);
-			name.setSubcategory(newSubcategory);
-			return name;
 		}).collect(Collectors.toList());
 	}
 	
@@ -101,12 +95,10 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		subcategory.setSubcategoryId(existingSubcategory.getSubcategoryId());
 		subcategory.setCategory(existingSubcategory.getCategory());
 
-		
+		subcategoryImageRepository.deleteAll(existingSubcategory.getSubcategoryImages());
 		List<SubcategoryImage> subcategoryImages = getSubcategoryImages(request, subcategory);
-		List<SpecificationName> specificationNames = getSpecificationNames(request, subcategory);
 		
 		subcategory.setSubcategoryImages(subcategoryImages);
-		subcategory.setSpecificationNames(specificationNames);
 		subcategory.setProducts(existingSubcategory.getProducts());
 		
 		Subcategory updateSubcategory = subcategoryRepository.save(subcategory);
@@ -114,12 +106,19 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		return response;
 	}
 	
+	@Override
+	public SubcategoryResponse getSubcategoryById(Long subcategoryId) {
+		Subcategory existingSubcategory = subcategoryRepository.findById(subcategoryId).orElseThrow(() -> new SubcategoryNotFoundException("Subcategory not found"));
+		
+		return SubcategoryResponseMapper.INSTANCE.toPayload(existingSubcategory);
+	}
+	
+	@Transactional
 	public Page<SubcategoryResponse> getAllSubcategories(Integer page, Integer size){
 		Page<Subcategory> subcategories = subcategoryRepository.findAll(PageRequest.of(page, size));
 
 		Page<SubcategoryResponse> subcategoryRespPage = subcategories.map(subcat ->{
 			SubcategoryResponse response = SubcategoryResponseMapper.INSTANCE.toPayload(subcat);
-			response.setSpecificationNames(getAllSpecificationNames(subcat));
 			return response;
 		});
 		return subcategoryRespPage;
@@ -133,7 +132,16 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		return specificationNames;
 	}
 	
-	public Page<SubcategoryResponse> getSubcategoriesByCategoryId(Long categoryId){
+	@Transactional
+	@Override
+	public Page<SubcategoryResponse> getSubcategoriesByCategoryId(Integer page, Integer size, Long categoryId){
+		Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+		Page<Subcategory> subcatePage = subcategoryRepository.findAllByCategory(PageRequest.of(page, size), category);
 		
+		Page<SubcategoryResponse> subcategoryRespPage = subcatePage.map(subcat ->{
+			SubcategoryResponse response = SubcategoryResponseMapper.INSTANCE.toPayload(subcat);
+			return response;
+		});
+		return subcategoryRespPage;
 	}
 }

@@ -17,7 +17,7 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
-	public static final long TOKEN_VALIDITY  = 24 * 60 * 60 * 1000;
+	public static final long TOKEN_VALIDITY  = 7 * 24 * 60 * 60 * 1000;
 	private final String SECRET_KEY = "afafasfafafasfasfasfafacasdasfasxASFACASDFACASDFASFASFDAFASFASDAADSCSDFADCVSGCFVADXCcadwavfsfarvf";
 	
 	// generate token
